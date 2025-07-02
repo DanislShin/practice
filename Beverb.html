@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>English Active Tenses Practice</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    :root {
+      --present: #4285f4;
+      --past: #ea4335;
+      --future: #34a853;
+      --continuous: #673ab7;
+      --perfect: #fbbc05;
+    }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      line-height: 1.7;
+      color: #333;
+    }
+    h1, h2 {
+      color: #202124;
+      border-bottom: 2px solid #4285f4;
+      padding-bottom: 10px;
+    }
+    h2 { margin-top: 30px; }
+    button {
+      margin: 5px 5px 10px 0;
+      padding: 8px 15px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .tense-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+    .usage {
+      margin: 20px 0;
+      padding-left: 15px;
+      border-left: 3px solid #ddd;
+    }
+    .sentence-block {
+      padding: 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: white;
+      margin: 10px 0;
+      position: relative;
+    }
+    .tense-label {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--tense-color);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    .form-label {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #5f6368;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.75em;
+    }
+    audio { 
+      display: block;
+      margin: 12px 0;
+      width: 100%;
+    }
+    .translation {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e8f0fe;
+      border-radius: 4px;
+    }
+    .hidden { display: none; }
+    .checkmark {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      color: #34a853;
+      font-size: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <h1>English Active Tenses Practice</h1>
+  <button onclick="downloadAllRecordings()">📥 Download All Recordings</button>
+  <div id="content"></div>
+
+  <script>
+    const grammarData = [
+      // ======= 단순 현재 (Simple Present) =======
+      {
+        tense: "Simple Present",
+        color: "var(--present)",
+        usages: [
+          {
+            title: "용법 1: 현재의 상태 (소유, 감정, 생각, 존재)",
+            examples: [
+              { en: "I have a car.", ko: "나는 차를 가지고 있어요.", form: "긍정문" },
+              { en: "I don’t have a car.", ko: "나는 차를 가지고 있지 않아요.", form: "부정문" },
+              { en: "Do you have a car?", ko: "너 차 가지고 있어?", form: "의문문" },
+              { en: "Don’t you have a car?", ko: "너 차 안 가지고 있어?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 2: 습관이나 일상 (반복되는 행동)",
+            examples: [
+              { en: "He goes to school every day.", ko: "그는 매일 학교에 가요.", form: "긍정문" },
+              { en: "He doesn’t go to school every day.", ko: "그는 매일 학교에 가지 않아요.", form: "부정문" },
+              { en: "Does he go to school every day?", ko: "그가 매일 학교에 가?", form: "의문문" },
+              { en: "Doesn’t he go to school every day?", ko: "그가 매일 학교에 안 가?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 3: 일반적인 사실이나 진리",
+            examples: [
+              { en: "The sun rises in the east.", ko: "해는 동쪽에서 떠요.", form: "긍정문" },
+              { en: "The sun doesn’t rise in the west.", ko: "해는 서쪽에서 뜨지 않아요.", form: "부정문" },
+              { en: "Does the sun rise in the east?", ko: "해가 동쪽에서 떠?", form: "의문문" },
+              { en: "Doesn’t the sun rise in the east?", ko: "해가 동쪽에서 안 떠?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 4: 감정, 의견, 상태 (현재의 느낌이나 생각)",
+            examples: [
+              { en: "I think you’re right.", ko: "나는 너가 맞다고 생각해요.", form: "긍정문" },
+              { en: "I don’t think you’re right.", ko: "나는 너가 맞다고 생각하지 않아요.", form: "부정문" },
+              { en: "Do you think I’m right?", ko: "너 내가 맞다고 생각해?", form: "의문문" },
+              { en: "Don’t you think I’m right?", ko: "너 내가 맞다고 생각 안 해?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 5: 일정이나 시간표 (정해진 스케줄)",
+            examples: [
+              { en: "The train leaves at 6 PM.", ko: "기차는 오후 6시에 떠나요.", form: "긍정문" },
+              { en: "The train doesn’t leave at 6 PM.", ko: "기차는 오후 6시에 떠나지 않아요.", form: "부정문" },
+              { en: "Does the train leave at 6 PM?", ko: "기차가 오후 6시에 떠나?", form: "의문문" },
+              { en: "Doesn’t the train leave at 6 PM?", ko: "기차가 오후 6시에 안 떠나?", form: "부정의문문" }
+            ]
+          }
+        ]
+      },
+
+      // ======= 단순 과거 (Simple Past) =======
+      {
+        tense: "Simple Past",
+        color: "var(--past)",
+        usages: [
+          {
+            title: "용법 1: 과거에 완료된 특정 사건",
+            examples: [
+              { en: "She visited her grandma last weekend.", ko: "그녀는 지난 주말에 할머니를 방문했어요.", form: "긍정문" },
+              { en: "She didn’t visit her grandma last weekend.", ko: "그녀는 지난 주말에 할머니를 방문하지 않았어요.", form: "부정문" },
+              { en: "Did she visit her grandma last weekend?", ko: "그녀가 지난 주말에 할머니를 방문했어?", form: "의문문" },
+              { en: "Didn’t she visit her grandma last weekend?", ko: "그녀가 지난 주말에 할머니를 방문하지 않았어?", form: "부정의문문" }
+            ]
+          }
+        ]
+      },
+
+      // ======= 단순 미래 (Simple Future) =======
+      {
+        tense: "Simple Future",
+        color: "var(--future)",
+        usages: [
+          {
+            title: "용법 1: 미래의 계획이나 예측",
+            examples: [
+              { en: "We will travel to Busan next month.", ko: "우리는 다음 달에 부산에 여행 갈 거예요.", form: "긍정문" },
+              { en: "We won’t travel to Busan next month.", ko: "우리는 다음 달에 부산에 여행 가지 않을 거예요.", form: "부정문" },
+              { en: "Will you travel to Busan next month?", ko: "너 다음 달에 부산에 여행 갈 거야?", form: "의문문" },
+              { en: "Won’t you travel to Busan next month?", ko: "너 다음 달에 부산에 여행 안 갈 거야?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 2: 즉흥적인 결정",
+            examples: [
+              { en: "I will call you later.", ko: "나중에 너한테 전화할게요.", form: "긍정문" },
+              { en: "I won’t call you later.", ko: "나중에 너한테 전화 안 할게요.", form: "부정문" },
+              { en: "Will you call me later?", ko: "나중에 나한테 전화할 거야?", form: "의문문" },
+              { en: "Won’t you call me later?", ko: "나중에 나한테 전화 안 할 거야?", form: "부정의문문" }
+            ]
+          }
+        ]
+      },
+
+      // ======= 현재 진행 (Present Continuous) =======
+      {
+        tense: "Present Continuous",
+        color: "var(--continuous)",
+        usages: [
+          {
+            title: "용법 1: 지금 이 순간 진행 중인 일",
+            examples: [
+              { en: "He is studying English right now.", ko: "그는 지금 영어를 공부하고 있어요.", form: "긍정문" },
+              { en: "He isn’t studying English right now.", ko: "그는 지금 영어를 공부하고 있지 않아요.", form: "부정문" },
+              { en: "Is he studying English right now?", ko: "그가 지금 영어를 공부하고 있어?", form: "의문문" },
+              { en: "Isn’t he studying English right now?", ko: "그가 지금 영어를 공부하고 있지 않아?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 2: 현재 시점의 일시적인 행동",
+            examples: [
+              { en: "She is staying at a hotel this week.", ko: "그녀는 이번 주에 호텔에 묵고 있어요.", form: "긍정문" },
+              { en: "She isn’t staying at a hotel this week.", ko: "그녀는 이번 주에 호텔에 묵고 있지 않아요.", form: "부정문" },
+              { en: "Is she staying at a hotel this week?", ko: "그녀가 이번 주에 호텔에 묵고 있어?", form: "의문문" },
+              { en: "Isn’t she staying at a hotel this week?", ko: "그녀가 이번 주에 호텔에 묵고 있지 않아?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 3: 미래의 예정된 일이나 스케줄",
+            examples: [
+              { en: "She is meeting her friend tomorrow.", ko: "그녀는 내일 친구를 만날 거예요.", form: "긍정문" },
+              { en: "She isn’t meeting her friend tomorrow.", ko: "그녀는 내일 친구를 만나지 않을 거예요.", form: "부정문" },
+              { en: "Is she meeting her friend tomorrow?", ko: "그녀가 내일 친구를 만날 거야?", form: "의문문" },
+              { en: "Isn’t she meeting her friend tomorrow?", ko: "그녀가 내일 친구를 안 만날 거야?", form: "부정의문문" }
+            ]
+          }
+        ]
+      },
+
+      // ======= 과거 진행 (Past Continuous) =======
+      {
+        tense: "Past Continuous",
+        color: "var(--continuous)",
+        usages: [
+          {
+            title: "용법 1: 과거 특정 시점에 진행 중이던 일",
+            examples: [
+              { en: "They were watching TV when I called.", ko: "그들은 내가 전화했을 때 TV를 보고 있었어요.", form: "긍정문" },
+              { en: "They weren’t watching TV when I called.", ko: "그들은 내가 전화했을 때 TV를 보고 있지 않았어요.", form: "부정문" },
+              { en: "Were they watching TV when I called?", ko: "그들이 내가 전화했을 때 TV를 보고 있었어?", form: "의문문" },
+              { en: "Weren’t they watching TV when I called?", ko: "그들이 내가 전화했을 때 TV를 보고 있지 않았어?", form: "부정의문문" }
+            ]
+          }
+        ]
+      },
+
+      // ======= 현재 완료 (Present Perfect) =======
+      {
+        tense: "Present Perfect",
+        color: "var(--perfect)",
+        usages: [
+          {
+            title: "용법 1: 과거부터 현재까지 이어진 경험",
+            examples: [
+              { en: "I have visited Paris three times.", ko: "나는 파리를 세 번 방문했어요.", form: "긍정문" },
+              { en: "I haven’t visited Paris three times.", ko: "나는 파리를 세 번 방문하지 않았어요.", form: "부정문" },
+              { en: "Have you visited Paris three times?", ko: "너 파리를 세 번 방문했어?", form: "의문문" },
+              { en: "Haven’t you visited Paris three times?", ko: "너 파리를 세 번 방문하지 않았어?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 2: 방금 끝난 일",
+            examples: [
+              { en: "I have just finished my homework.", ko: "나는 방금 숙제를 끝냈어요.", form: "긍정문" },
+              { en: "I haven’t just finished my homework.", ko: "나는 방금 숙제를 끝내지 않았어요.", form: "부정문" },
+              { en: "Have you just finished your homework?", ko: "너 방금 숙제 끝냈어?", form: "의문문" },
+              { en: "Haven’t you just finished your homework?", ko: "너 방금 숙제 안 끝냈어?", form: "부정의문문" }
+            ]
+          },
+          {
+            title: "용법 3: 과거부터 현재까지의 상태",
+            examples: [
+              { en: "We have lived here since 2020.", ko: "우리는 2020년부터 여기 살아왔어요.", form: "긍정문" },
+              { en: "We haven’t lived here since 2020.", ko: "우리는 2020년부터 여기 살지 않았어요.", form: "부정문" },
+              { en: "Have you lived here since 2020?", ko: "너 2020년부터 여기 살아왔어?", form: "의문문" },
+              { en: "Haven’t you lived here since 2020?", ko: "너 2020년부터 여기 살지 않았어?", form: "부정의문문" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const audioBlobs = {};
+    const mediaRecorders = {};
+
+    function playTTS(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 0.9;
+      speechSynthesis.speak(utter);
+    }
+
+    async function startRecording(tenseIndex, usageIndex, exampleIndex) {
+      const index = `${tenseIndex}-${usageIndex}-${exampleIndex}`;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          document.getElementById(`audio-${index}`).src = URL.createObjectURL(blob);
+          audioBlobs[index] = blob;
+          document.getElementById(`check-${index}`).innerText = '✅';
+        };
+
+        mediaRecorders[index] = recorder;
+        recorder.start();
+      } catch (error) {
+        alert('Microphone access error: ' + error.message);
+      }
+    }
+
+    function stopRecording(tenseIndex, usageIndex, exampleIndex) {
+      const index = `${tenseIndex}-${usageIndex}-${exampleIndex}`;
+      if (mediaRecorders[index] && mediaRecorders[index].state !== 'inactive') {
+        mediaRecorders[index].stop();
+      }
+    }
+
+    function toggle(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('hidden');
+    }
+
+    function downloadAllRecordings() {
+      const zip = new JSZip();
+      let hasRecordings = false;
+      
+      Object.keys(audioBlobs).forEach(key => {
+        if (audioBlobs[key]) {
+          const [t, u, e] = key.split('-');
+          const tense = grammarData[t].tense.replace(/ /g, '_');
+          const filename = `${tense}_example_${parseInt(e)+1}.webm`;
+          zip.file(filename, audioBlobs[key]);
+          hasRecordings = true;
+        }
+      });
+      
+      if (hasRecordings) {
+        zip.generateAsync({ type: 'blob' }).then(content => {
+          saveAs(content, 'english_tenses_full_recordings.zip');
+        });
+      } else {
+        alert('No recordings available to download.');
+      }
+    }
+
+    const container = document.getElementById('content');
+    
+    grammarData.forEach((tenseData, tenseIndex) => {
+      const tenseSection = document.createElement('div');
+      tenseSection.className = 'tense-section';
+      tenseSection.style.setProperty('--tense-color', tenseData.color);
+      
+      let tenseHTML = `
+        <h2 style="border-color: ${tenseData.color}">
+          <span class="tense-label" style="background: ${tenseData.color}">${tenseData.tense}</span>
+        </h2>
+      `;
+      
+      tenseData.usages.forEach((usage, usageIndex) => {
+        tenseHTML += `
+          <div class="usage">
+            <h3>${usage.title}</h3>
+        `;
+        
+        usage.examples.forEach((example, exampleIndex) => {
+          const index = `${tenseIndex}-${usageIndex}-${exampleIndex}`;
+          tenseHTML += `
+            <div class="sentence-block">
+              <span id="check-${index}" class="checkmark"></span>
+              <div>
+                <span class="form-label">${example.form}</span>
+              </div>
+              <p><strong>${example.en}</strong></p>
+              <div>
+                <button onclick="playTTS('${example.en.replace(/'/g, "\\'")}')">▶️ Listen</button>
+                <button onclick="startRecording(${tenseIndex}, ${usageIndex}, ${exampleIndex})">🎙️ Record</button>
+                <button onclick="stopRecording(${tenseIndex}, ${usageIndex}, ${exampleIndex})">⏹️ Stop</button>
+                <button onclick="toggle('trans-${index}')">🔍 Translation</button>
+              </div>
+              <audio id="audio-${index}" controls></audio>
+              <div id="trans-${index}" class="hidden translation">
+                <p><strong>Korean:</strong> ${example.ko}</p>
+              </div>
+            </div>
+          `;
+        });
+        
+        tenseHTML += `</div>`;
+      });
+      
+      tenseSection.innerHTML = tenseHTML;
+      container.appendChild(tenseSection);
+    });
+  </script>
+</body>
+</html>

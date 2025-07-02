@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Be Verb Practice (Present/Past)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    :root {
+      --present: #4285f4;
+      --past: #ea4335;
+    }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      line-height: 1.7;
+      color: #333;
+    }
+    h1, h2 {
+      color: #202124;
+      border-bottom: 2px solid #4285f4;
+      padding-bottom: 10px;
+    }
+    h2 { margin-top: 30px; }
+    button {
+      margin: 5px 5px 10px 0;
+      padding: 8px 15px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .tense-section {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 25px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .sentence-block {
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: white;
+      margin: 8px 0;
+      position: relative;
+    }
+    .tense-label {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--tense-color);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+    .form-label {
+      display: inline-block;
+      padding: 4px 8px;
+      background: #5f6368;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.75em;
+      margin-left: 5px;
+    }
+    audio { 
+      display: block;
+      margin: 10px 0;
+      width: 100%;
+    }
+    .translation {
+      margin-top: 8px;
+      padding: 8px;
+      background: #e8f0fe;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+    .hidden { display: none; }
+    .checkmark {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      color: #34a853;
+      font-size: 18px;
+    }
+    @media (max-width: 600px) {
+      body { padding: 10px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Be Verb Practice (Present/Past Tense)</h1>
+  <button onclick="downloadAllRecordings()">📥 Download All Recordings</button>
+  <div id="content"></div>
+
+  <script>
+    const grammarData = [
+      // ======= 현재 시제 (Present Tense) =======
+      {
+        tense: "Present Tense (Be Verb)",
+        color: "var(--present)",
+        categories: [
+          {
+            title: "예문 1: 신분",
+            examples: [
+              { en: "I am a student.", ko: "나는 학생이다.", form: "평서문" },
+              { en: "I am not a student.", ko: "나는 학생이 아니다.", form: "부정문" },
+              { en: "Am I a student?", ko: "내가 학생인가?", form: "의문문" },
+              { en: "Am I not a student?", ko: "내가 학생이 아닌가?", form: "의문 부정문" }
+            ]
+          },
+          {
+            title: "예문 2: 상태",
+            examples: [
+              { en: "She is happy.", ko: "그녀는 행복하다.", form: "평서문" },
+              { en: "She is not happy.", ko: "그녀는 행복하지 않다.", form: "부정문" },
+              { en: "Is she happy?", ko: "그녀가 행복한가?", form: "의문문" },
+              { en: "Is she not happy?", ko: "그녀가 행복하지 않은가?", form: "의문 부정문" }
+            ]
+          },
+          {
+            title: "예문 3: 위치",
+            examples: [
+              { en: "They are at home.", ko: "그들은 집에 있다.", form: "평서문" },
+              { en: "They are not at home.", ko: "그들은 집에 있지 않다.", form: "부정문" },
+              { en: "Are they at home?", ko: "그들이 집에 있는가?", form: "의문문" },
+              { en: "Are they not at home?", ko: "그들이 집에 있지 않은가?", form: "의문 부정문" }
+            ]
+          }
+        ]
+      },
+
+      // ======= 과거 시제 (Past Tense) =======
+      {
+        tense: "Past Tense (Be Verb)",
+        color: "var(--past)",
+        categories: [
+          {
+            title: "예문 1: 신분",
+            examples: [
+              { en: "I was a teacher.", ko: "나는 교사였다.", form: "평서문" },
+              { en: "I was not a teacher.", ko: "나는 교사가 아니었다.", form: "부정문" },
+              { en: "Was I a teacher?", ko: "내가 교사였나?", form: "의문문" },
+              { en: "Was I not a teacher?", ko: "내가 교사가 아니었나?", form: "의문 부정문" }
+            ]
+          },
+          {
+            title: "예문 2: 상태",
+            examples: [
+              { en: "He was tired.", ko: "그는 피곤했다.", form: "평서문" },
+              { en: "He was not tired.", ko: "그는 피곤하지 않았다.", form: "부정문" },
+              { en: "Was he tired?", ko: "그가 피곤했나?", form: "의문문" },
+              { en: "Was he not tired?", ko: "그가 피곤하지 않았나?", form: "의문 부정문" }
+            ]
+          },
+          {
+            title: "예문 3: 위치",
+            examples: [
+              { en: "We were in the park.", ko: "우리는 공원에 있었다.", form: "평서문" },
+              { en: "We were not in the park.", ko: "우리는 공원에 있지 않았다.", form: "부정문" },
+              { en: "Were we in the park?", ko: "우리가 공원에 있었나?", form: "의문문" },
+              { en: "Were we not in the park?", ko: "우리가 공원에 있지 않았나?", form: "의문 부정문" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const audioBlobs = {};
+    const mediaRecorders = {};
+
+    function playTTS(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 0.9;
+      speechSynthesis.speak(utter);
+    }
+
+    async function startRecording(tenseIndex, categoryIndex, exampleIndex) {
+      const index = `${tenseIndex}-${categoryIndex}-${exampleIndex}`;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          document.getElementById(`audio-${index}`).src = URL.createObjectURL(blob);
+          audioBlobs[index] = blob;
+          document.getElementById(`check-${index}`).innerText = '✅';
+        };
+
+        mediaRecorders[index] = recorder;
+        recorder.start();
+      } catch (error) {
+        alert('Microphone access error: ' + error.message);
+      }
+    }
+
+    function stopRecording(tenseIndex, categoryIndex, exampleIndex) {
+      const index = `${tenseIndex}-${categoryIndex}-${exampleIndex}`;
+      if (mediaRecorders[index] && mediaRecorders[index].state !== 'inactive') {
+        mediaRecorders[index].stop();
+      }
+    }
+
+    function toggle(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('hidden');
+    }
+
+    function downloadAllRecordings() {
+      const zip = new JSZip();
+      let hasRecordings = false;
+      
+      Object.keys(audioBlobs).forEach(key => {
+        if (audioBlobs[key]) {
+          const [t, c, e] = key.split('-');
+          const tense = grammarData[t].tense.replace(/ /g, '_');
+          const filename = `${tense}_example_${parseInt(e)+1}.webm`;
+          zip.file(filename, audioBlobs[key]);
+          hasRecordings = true;
+        }
+      });
+      
+      if (hasRecordings) {
+        zip.generateAsync({ type: 'blob' }).then(content => {
+          saveAs(content, 'be_verb_recordings.zip');
+        });
+      } else {
+        alert('No recordings available to download.');
+      }
+    }
+
+    const container = document.getElementById('content');
+    
+    grammarData.forEach((tenseData, tenseIndex) => {
+      const tenseSection = document.createElement('div');
+      tenseSection.className = 'tense-section';
+      tenseSection.style.setProperty('--tense-color', tenseData.color);
+      
+      let tenseHTML = `
+        <h2 style="border-color: ${tenseData.color}">
+          <span class="tense-label" style="background: ${tenseData.color}">${tenseData.tense}</span>
+        </h2>
+      `;
+      
+      tenseData.categories.forEach((category, categoryIndex) => {
+        tenseHTML += `
+          <h3>${category.title}</h3>
+          <table>
+            <tr>
+              <th width="25%">문장 유형</th>
+              <th width="75%">예문</th>
+            </tr>
+        `;
+        
+        category.examples.forEach((example, exampleIndex) => {
+          const index = `${tenseIndex}-${categoryIndex}-${exampleIndex}`;
+          tenseHTML += `
+            <tr>
+              <td>${example.form}</td>
+              <td>
+                <div class="sentence-block">
+                  <span id="check-${index}" class="checkmark"></span>
+                  <p><strong>${example.en}</strong></p>
+                  <div>
+                    <button onclick="playTTS('${example.en.replace(/'/g, "\\'")}')">▶️ Listen</button>
+                    <button onclick="startRecording(${tenseIndex}, ${categoryIndex}, ${exampleIndex})">🎙️ Record</button>
+                    <button onclick="stopRecording(${tenseIndex}, ${categoryIndex}, ${exampleIndex})">⏹️ Stop</button>
+                    <button onclick="toggle('trans-${index}')">🔍 Translation</button>
+                  </div>
+                  <audio id="audio-${index}" controls></audio>
+                  <div id="trans-${index}" class="hidden translation">
+                    <p><strong>Korean:</strong> ${example.ko}</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+        
+        tenseHTML += `</table>`;
+      });
+      
+      tenseSection.innerHTML = tenseHTML;
+      container.appendChild(tenseSection);
+    });
+  </script>
+</body>
+</html>
