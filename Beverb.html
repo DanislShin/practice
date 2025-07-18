@@ -1,419 +1,1609 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>English Active Tenses Practice</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <style>
-    :root {
-      --present: #4285f4;
-      --past: #ea4335;
-      --future: #34a853;
-      --continuous: #673ab7;
-      --perfect: #fbbc05;
-    }
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      max-width: 1000px;
-      margin: auto;
-      padding: 20px;
-      line-height: 1.7;
-      color: #333;
-    }
-    h1, h2 {
-      color: #202124;
-      border-bottom: 2px solid #4285f4;
-      padding-bottom: 10px;
-    }
-    h2 { margin-top: 30px; }
-    button {
-      margin: 5px 5px 10px 0;
-      padding: 8px 15px;
-      background-color: #4285f4;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9em;
-    }
-    .tense-section {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 25px;
-    }
-    .usage {
-      margin: 20px 0;
-      padding-left: 15px;
-      border-left: 3px solid #ddd;
-    }
-    .sentence-block {
-      padding: 15px;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      background: white;
-      margin: 10px 0;
-      position: relative;
-    }
-    .tense-label {
-      display: inline-block;
-      padding: 4px 10px;
-      background: var(--tense-color);
-      color: white;
-      border-radius: 4px;
-      font-size: 0.85em;
-      font-weight: bold;
-      margin-right: 8px;
-    }
-    .form-label {
-      display: inline-block;
-      padding: 4px 8px;
-      background: #5f6368;
-      color: white;
-      border-radius: 4px;
-      font-size: 0.75em;
-    }
-    audio { 
-      display: block;
-      margin: 12px 0;
-      width: 100%;
-    }
-    .translation {
-      margin-top: 10px;
-      padding: 10px;
-      background: #e8f0fe;
-      border-radius: 4px;
-    }
-    .hidden { display: none; }
-    .checkmark {
-      position: absolute;
-      right: 15px;
-      top: 15px;
-      color: #34a853;
-      font-size: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 15px 0;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-  </style>
-</head>
-<body>
-  <h1>English Active Tenses Practice</h1>
-  <button onclick="downloadAllRecordings()">📥 Download All Recordings</button>
-  <div id="content"></div>
-
-  <script>
-    const grammarData = [
-      // ======= 단순 현재 (Simple Present) =======
-      {
-        tense: "Simple Present",
-        color: "var(--present)",
-        usages: [
-          {
-            title: "용법 1: 현재의 상태 (소유, 감정, 생각, 존재)",
-            examples: [
-              { en: "I have a car.", ko: "나는 차를 가지고 있어요.", form: "긍정문" },
-              { en: "I don’t have a car.", ko: "나는 차를 가지고 있지 않아요.", form: "부정문" },
-              { en: "Do you have a car?", ko: "너 차 가지고 있어?", form: "의문문" },
-              { en: "Don’t you have a car?", ko: "너 차 안 가지고 있어?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 2: 습관이나 일상 (반복되는 행동)",
-            examples: [
-              { en: "He goes to school every day.", ko: "그는 매일 학교에 가요.", form: "긍정문" },
-              { en: "He doesn’t go to school every day.", ko: "그는 매일 학교에 가지 않아요.", form: "부정문" },
-              { en: "Does he go to school every day?", ko: "그가 매일 학교에 가?", form: "의문문" },
-              { en: "Doesn’t he go to school every day?", ko: "그가 매일 학교에 안 가?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 3: 일반적인 사실이나 진리",
-            examples: [
-              { en: "The sun rises in the east.", ko: "해는 동쪽에서 떠요.", form: "긍정문" },
-              { en: "The sun doesn’t rise in the west.", ko: "해는 서쪽에서 뜨지 않아요.", form: "부정문" },
-              { en: "Does the sun rise in the east?", ko: "해가 동쪽에서 떠?", form: "의문문" },
-              { en: "Doesn’t the sun rise in the east?", ko: "해가 동쪽에서 안 떠?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 4: 감정, 의견, 상태 (현재의 느낌이나 생각)",
-            examples: [
-              { en: "I think you’re right.", ko: "나는 너가 맞다고 생각해요.", form: "긍정문" },
-              { en: "I don’t think you’re right.", ko: "나는 너가 맞다고 생각하지 않아요.", form: "부정문" },
-              { en: "Do you think I’m right?", ko: "너 내가 맞다고 생각해?", form: "의문문" },
-              { en: "Don’t you think I’m right?", ko: "너 내가 맞다고 생각 안 해?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 5: 일정이나 시간표 (정해진 스케줄)",
-            examples: [
-              { en: "The train leaves at 6 PM.", ko: "기차는 오후 6시에 떠나요.", form: "긍정문" },
-              { en: "The train doesn’t leave at 6 PM.", ko: "기차는 오후 6시에 떠나지 않아요.", form: "부정문" },
-              { en: "Does the train leave at 6 PM?", ko: "기차가 오후 6시에 떠나?", form: "의문문" },
-              { en: "Doesn’t the train leave at 6 PM?", ko: "기차가 오후 6시에 안 떠나?", form: "부정의문문" }
-            ]
-          }
-        ]
-      },
-
-      // ======= 단순 과거 (Simple Past) =======
-      {
-        tense: "Simple Past",
-        color: "var(--past)",
-        usages: [
-          {
-            title: "용법 1: 과거에 완료된 특정 사건",
-            examples: [
-              { en: "She visited her grandma last weekend.", ko: "그녀는 지난 주말에 할머니를 방문했어요.", form: "긍정문" },
-              { en: "She didn’t visit her grandma last weekend.", ko: "그녀는 지난 주말에 할머니를 방문하지 않았어요.", form: "부정문" },
-              { en: "Did she visit her grandma last weekend?", ko: "그녀가 지난 주말에 할머니를 방문했어?", form: "의문문" },
-              { en: "Didn’t she visit her grandma last weekend?", ko: "그녀가 지난 주말에 할머니를 방문하지 않았어?", form: "부정의문문" }
-            ]
-          }
-        ]
-      },
-
-      // ======= 단순 미래 (Simple Future) =======
-      {
-        tense: "Simple Future",
-        color: "var(--future)",
-        usages: [
-          {
-            title: "용법 1: 미래의 계획이나 예측",
-            examples: [
-              { en: "We will travel to Busan next month.", ko: "우리는 다음 달에 부산에 여행 갈 거예요.", form: "긍정문" },
-              { en: "We won’t travel to Busan next month.", ko: "우리는 다음 달에 부산에 여행 가지 않을 거예요.", form: "부정문" },
-              { en: "Will you travel to Busan next month?", ko: "너 다음 달에 부산에 여행 갈 거야?", form: "의문문" },
-              { en: "Won’t you travel to Busan next month?", ko: "너 다음 달에 부산에 여행 안 갈 거야?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 2: 즉흥적인 결정",
-            examples: [
-              { en: "I will call you later.", ko: "나중에 너한테 전화할게요.", form: "긍정문" },
-              { en: "I won’t call you later.", ko: "나중에 너한테 전화 안 할게요.", form: "부정문" },
-              { en: "Will you call me later?", ko: "나중에 나한테 전화할 거야?", form: "의문문" },
-              { en: "Won’t you call me later?", ko: "나중에 나한테 전화 안 할 거야?", form: "부정의문문" }
-            ]
-          }
-        ]
-      },
-
-      // ======= 현재 진행 (Present Continuous) =======
-      {
-        tense: "Present Continuous",
-        color: "var(--continuous)",
-        usages: [
-          {
-            title: "용법 1: 지금 이 순간 진행 중인 일",
-            examples: [
-              { en: "He is studying English right now.", ko: "그는 지금 영어를 공부하고 있어요.", form: "긍정문" },
-              { en: "He isn’t studying English right now.", ko: "그는 지금 영어를 공부하고 있지 않아요.", form: "부정문" },
-              { en: "Is he studying English right now?", ko: "그가 지금 영어를 공부하고 있어?", form: "의문문" },
-              { en: "Isn’t he studying English right now?", ko: "그가 지금 영어를 공부하고 있지 않아?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 2: 현재 시점의 일시적인 행동",
-            examples: [
-              { en: "She is staying at a hotel this week.", ko: "그녀는 이번 주에 호텔에 묵고 있어요.", form: "긍정문" },
-              { en: "She isn’t staying at a hotel this week.", ko: "그녀는 이번 주에 호텔에 묵고 있지 않아요.", form: "부정문" },
-              { en: "Is she staying at a hotel this week?", ko: "그녀가 이번 주에 호텔에 묵고 있어?", form: "의문문" },
-              { en: "Isn’t she staying at a hotel this week?", ko: "그녀가 이번 주에 호텔에 묵고 있지 않아?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 3: 미래의 예정된 일이나 스케줄",
-            examples: [
-              { en: "She is meeting her friend tomorrow.", ko: "그녀는 내일 친구를 만날 거예요.", form: "긍정문" },
-              { en: "She isn’t meeting her friend tomorrow.", ko: "그녀는 내일 친구를 만나지 않을 거예요.", form: "부정문" },
-              { en: "Is she meeting her friend tomorrow?", ko: "그녀가 내일 친구를 만날 거야?", form: "의문문" },
-              { en: "Isn’t she meeting her friend tomorrow?", ko: "그녀가 내일 친구를 안 만날 거야?", form: "부정의문문" }
-            ]
-          }
-        ]
-      },
-
-      // ======= 과거 진행 (Past Continuous) =======
-      {
-        tense: "Past Continuous",
-        color: "var(--continuous)",
-        usages: [
-          {
-            title: "용법 1: 과거 특정 시점에 진행 중이던 일",
-            examples: [
-              { en: "They were watching TV when I called.", ko: "그들은 내가 전화했을 때 TV를 보고 있었어요.", form: "긍정문" },
-              { en: "They weren’t watching TV when I called.", ko: "그들은 내가 전화했을 때 TV를 보고 있지 않았어요.", form: "부정문" },
-              { en: "Were they watching TV when I called?", ko: "그들이 내가 전화했을 때 TV를 보고 있었어?", form: "의문문" },
-              { en: "Weren’t they watching TV when I called?", ko: "그들이 내가 전화했을 때 TV를 보고 있지 않았어?", form: "부정의문문" }
-            ]
-          }
-        ]
-      },
-
-      // ======= 현재 완료 (Present Perfect) =======
-      {
-        tense: "Present Perfect",
-        color: "var(--perfect)",
-        usages: [
-          {
-            title: "용법 1: 과거부터 현재까지 이어진 경험",
-            examples: [
-              { en: "I have visited Paris three times.", ko: "나는 파리를 세 번 방문했어요.", form: "긍정문" },
-              { en: "I haven’t visited Paris three times.", ko: "나는 파리를 세 번 방문하지 않았어요.", form: "부정문" },
-              { en: "Have you visited Paris three times?", ko: "너 파리를 세 번 방문했어?", form: "의문문" },
-              { en: "Haven’t you visited Paris three times?", ko: "너 파리를 세 번 방문하지 않았어?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 2: 방금 끝난 일",
-            examples: [
-              { en: "I have just finished my homework.", ko: "나는 방금 숙제를 끝냈어요.", form: "긍정문" },
-              { en: "I haven’t just finished my homework.", ko: "나는 방금 숙제를 끝내지 않았어요.", form: "부정문" },
-              { en: "Have you just finished your homework?", ko: "너 방금 숙제 끝냈어?", form: "의문문" },
-              { en: "Haven’t you just finished your homework?", ko: "너 방금 숙제 안 끝냈어?", form: "부정의문문" }
-            ]
-          },
-          {
-            title: "용법 3: 과거부터 현재까지의 상태",
-            examples: [
-              { en: "We have lived here since 2020.", ko: "우리는 2020년부터 여기 살아왔어요.", form: "긍정문" },
-              { en: "We haven’t lived here since 2020.", ko: "우리는 2020년부터 여기 살지 않았어요.", form: "부정문" },
-              { en: "Have you lived here since 2020?", ko: "너 2020년부터 여기 살아왔어?", form: "의문문" },
-              { en: "Haven’t you lived here since 2020?", ko: "너 2020년부터 여기 살지 않았어?", form: "부정의문문" }
-            ]
-          }
-        ]
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Be 동사 활용 연습</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        max-width: 900px;
+        margin: auto;
+        padding: 20px;
+        line-height: 1.6;
+        background-color: #f5f5f5;
       }
-    ];
+      button {
+        margin: 5px 5px 10px 0;
+        padding: 8px 15px;
+        background-color: #d32f2f;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+      }
+      .sentence-block {
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: white;
+        margin-bottom: 15px;
+        position: relative;
+      }
+      .hidden {
+        display: none;
+      }
+      audio {
+        display: block;
+        margin: 12px 0;
+        width: 100%;
+      }
+      .translation,
+      .vocab,
+      .furigana {
+        margin-top: 10px;
+        padding: 12px;
+        background: #ffebee;
+        border-radius: 6px;
+      }
+      .furigana {
+        background: #e3f2fd;
+        color: #0d47a1;
+      }
+      .checkmark {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: #34a853;
+        font-size: 20px;
+      }
+      #micStatus {
+        padding: 15px;
+        background: #fff3e0;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        display: none;
+      }
+      #micStatus button {
+        margin-top: 10px;
+        background-color: #fb8c00;
+      }
+      .permission-info {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 15px;
+      }
+      .accuracy-result {
+        margin-top: 10px;
+        padding: 10px;
+        background: #e8f5e9;
+        border-radius: 4px;
+      }
+      #toggleFuriganaBtn {
+        background-color: #1976d2;
+      }
+      .error-analysis {
+        margin-top: 10px;
+        padding: 10px;
+        background: #fff8e1;
+        border-radius: 4px;
+      }
+      .error-char {
+        color: red;
+        font-weight: bold;
+        text-decoration: underline;
+      }
+      #downloadReportBtn {
+        background-color: #388e3c;
+      }
+      .tense-header {
+        background-color: #b71c1c;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 20px 0 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="color: #b71c1c">Be 동사 활용 연습</h1>
+    <div id="micStatus">
+      <p>⚠️ 마이크 접근 권한이 필요합니다</p>
+      <p>1. 아래 버튼을 클릭하면 권한 요청이 표시됩니다</p>
+      <p>2. "허용"을 선택해주세요</p>
+      <p>3. <strong>한 번 허용하면 다음부터는 자동으로 인식됩니다</strong></p>
+      <button id="permissionButton">마이크 접근 허용</button>
+    </div>
+    <button onclick="downloadAllRecordings()">
+      📥 녹음 파일 일괄 다운로드
+    </button>
+    <button id="toggleFuriganaBtn" onclick="toggleFurigana()">
+      ▼ 해석 보기/숨기기
+    </button>
+    <button id="downloadReportBtn" onclick="downloadAccuracyReport()">
+      📊 정확도 리포트 다운로드
+    </button>
+    <div class="permission-info">
+      ※ 마이크 접근은 이 사이트에서만 사용되며, 음성 데이터는 서버에 저장되지
+      않습니다
+    </div>
+    <div id="content"></div>
+    <script>
+      // ====== 전역 변수 ======
+      let globalStream = null;
+      const audioBlobs = [];
+      const mediaRecorders = {};
+      let permissionGranted =
+        localStorage.getItem("micPermissionGranted") === "true";
+      const accuracyResults = []; // 정확도 결과 저장
 
-    const audioBlobs = {};
-    const mediaRecorders = {};
+      // Be 동사 예문 데이터
+      const sentences = [
+        // Present Simple
+        {
+          en: "I am a student.",
+          ko: "나는 학생이다.",
+          type: "현재 단순 (신분, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "I am at home.",
+          ko: "나는 집에 있다.",
+          type: "현재 단순 (장소, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "I am happy.",
+          ko: "나는 행복하다.",
+          type: "현재 단순 (상태, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "You are a teacher.",
+          ko: "너는 교사다.",
+          type: "현재 단순 (신분, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "You are in Seoul.",
+          ko: "너는 서울에 있다.",
+          type: "현재 단순 (장소, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "You are happy.",
+          ko: "너는 행복하다.",
+          type: "현재 단순 (상태, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "He/She is a doctor.",
+          ko: "그는/그녀는 의사다.",
+          type: "현재 단순 (신분, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "He/She is at school.",
+          ko: "그는/그녀는 학교에 있다.",
+          type: "현재 단순 (장소, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "He/She is happy.",
+          ko: "그는/그녀는 행복하다.",
+          type: "현재 단순 (상태, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "They are friends.",
+          ko: "그들은 친구다.",
+          type: "현재 단순 (신분, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "They are in Busan.",
+          ko: "그들은 부산에 있다.",
+          type: "현재 단순 (장소, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "They are happy.",
+          ko: "그들은 행복하다.",
+          type: "현재 단순 (상태, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "It is sunny.",
+          ko: "날씨가 맑다.",
+          type: "현재 단순 (날씨, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "It is 7 o’clock.",
+          ko: "7시다.",
+          type: "현재 단순 (시간, 평서문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Am I a student?",
+          ko: "내가 학생이니?",
+          type: "현재 단순 (신분, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Am I at home?",
+          ko: "내가 집에 있니?",
+          type: "현재 단순 (장소, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Am I happy?",
+          ko: "내가 행복하니?",
+          type: "현재 단순 (상태, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Are you a teacher?",
+          ko: "너 교사니?",
+          type: "현재 단순 (신분, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Are you in Seoul?",
+          ko: "너 서울에 있니?",
+          type: "현재 단순 (장소, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Are you happy?",
+          ko: "너 행복하니?",
+          type: "현재 단순 (상태, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Is he/she a doctor?",
+          ko: "그는/그녀는 의사니?",
+          type: "현재 단순 (신분, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Is he/she at school?",
+          ko: "그는/그녀는 학교에 있니?",
+          type: "현재 단순 (장소, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Is he/she happy?",
+          ko: "그는/그녀는 행복하니?",
+          type: "현재 단순 (상태, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Are they friends?",
+          ko: "그들은 친구니?",
+          type: "현재 단순 (신분, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Are they in Busan?",
+          ko: "그들은 부산에 있니?",
+          type: "현재 단순 (장소, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Are they happy?",
+          ko: "그들은 행복하니?",
+          type: "현재 단순 (상태, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Is it sunny?",
+          ko: "맑니?",
+          type: "현재 단순 (날씨, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Is it 7 o’clock?",
+          ko: "7시니?",
+          type: "현재 단순 (시간, 의문문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Am I not a student?",
+          ko: "내가 학생이 아니니?",
+          type: "현재 단순 (신분, 의문 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Aren’t you a teacher?",
+          ko: "너 교사가 아니니?",
+          type: "현재 단순 (신분, 의문 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Isn’t he/she a doctor?",
+          ko: "그는/그녀는 의사가 아니니?",
+          type: "현재 단순 (신분, 의문 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Aren’t they friends?",
+          ko: "그들은 친구가 아니니?",
+          type: "현재 단순 (신분, 의문 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "Isn’t it sunny?",
+          ko: "맑지 않니?",
+          type: "현재 단순 (날씨, 의문 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "I am not a student.",
+          ko: "나는 학생이 아니다.",
+          type: "현재 단순 (신분, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "I am not at home.",
+          ko: "나는 집에 있지 않다.",
+          type: "현재 단순 (장소, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "I am not happy.",
+          ko: "나는 행복하지 않다.",
+          type: "현재 단순 (상태, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "You are not a teacher.",
+          ko: "너는 교사가 아니다.",
+          type: "현재 단순 (신분, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "You are not in Seoul.",
+          ko: "너는 서울에 있지 않다.",
+          type: "현재 단순 (장소, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "You are not happy.",
+          ko: "너는 행복하지 않다.",
+          type: "현재 단순 (상태, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "He/She is not a doctor.",
+          ko: "그는/그녀는 의사가 아니다.",
+          type: "현재 단순 (신분, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "He/She is not at school.",
+          ko: "그는/그녀는 학교에 있지 않다.",
+          type: "현재 단순 (장소, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "He/She is not happy.",
+          ko: "그는/그녀는 행복하지 않다.",
+          type: "현재 단순 (상태, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "They are not friends.",
+          ko: "그들은 친구가 아니다.",
+          type: "현재 단순 (신분, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "They are not in Busan.",
+          ko: "그들은 부산에 있지 않다.",
+          type: "현재 단순 (장소, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "They are not happy.",
+          ko: "그들은 행복하지 않다.",
+          type: "현재 단순 (상태, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "It is not sunny.",
+          ko: "날씨가 맑지 않다.",
+          type: "현재 단순 (날씨, 부정문)",
+          tense: "현재 단순",
+        },
+        {
+          en: "It is not 7 o’clock.",
+          ko: "7시가 아니다.",
+          type: "현재 단순 (시간, 부정문)",
+          tense: "현재 단순",
+        },
+        // Past Simple
+        {
+          en: "I was a student.",
+          ko: "나는 학생이었다.",
+          type: "과거 단순 (신분, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "I was at home.",
+          ko: "나는 집에 있었다.",
+          type: "과거 단순 (장소, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "I was happy.",
+          ko: "나는 행복했다.",
+          type: "과거 단순 (상태, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "You were a teacher.",
+          ko: "너는 교사였다.",
+          type: "과거 단순 (신분, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "You were in Seoul.",
+          ko: "너는 서울에 있었다.",
+          type: "과거 단순 (장소, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "You were happy.",
+          ko: "너는 행복했다.",
+          type: "과거 단순 (상태, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "He/She was a doctor.",
+          ko: "그는/그녀는 의사였다.",
+          type: "과거 단순 (신분, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "He/She was at school.",
+          ko: "그는/그녀는 학교에 있었다.",
+          type: "과거 단순 (장소, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "He/She was happy.",
+          ko: "그는/그녀는 행복했다.",
+          type: "과거 단순 (상태, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "They were friends.",
+          ko: "그들은 친구였다.",
+          type: "과거 단순 (신분, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "They were in Busan.",
+          ko: "그들은 부산에 있었다.",
+          type: "과거 단순 (장소, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "They were happy.",
+          ko: "그들은 행복했다.",
+          type: "과거 단순 (상태, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "It was sunny.",
+          ko: "날씨가 맑았다.",
+          type: "과거 단순 (날씨, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "It was 7 o’clock.",
+          ko: "7시였다.",
+          type: "과거 단순 (시간, 평서문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was I a student?",
+          ko: "내가 학생이었니?",
+          type: "과거 단순 (신분, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was I at home?",
+          ko: "내가 집에 있었니?",
+          type: "과거 단순 (장소, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was I happy?",
+          ko: "내가 행복했니?",
+          type: "과거 단순 (상태, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Were you a teacher?",
+          ko: "너 교사였니?",
+          type: "과거 단순 (신분, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Were you in Seoul?",
+          ko: "너 서울에 있었니?",
+          type: "과거 단순 (장소, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Were you happy?",
+          ko: "너 행복했니?",
+          type: "과거 단순 (상태, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was he/she a doctor?",
+          ko: "그는/그녀는 의사였니?",
+          type: "과거 단순 (신분, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was he/she at school?",
+          ko: "그는/그녀는 학교에 있었니?",
+          type: "과거 단순 (장소, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was he/she happy?",
+          ko: "그는/그녀는 행복했니?",
+          type: "과거 단순 (상태, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Were they friends?",
+          ko: "그들은 친구였니?",
+          type: "과거 단순 (신분, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Were they in Busan?",
+          ko: "그들은 부산에 있었니?",
+          type: "과거 단순 (장소, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Were they happy?",
+          ko: "그들은 행복했니?",
+          type: "과거 단순 (상태, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was it sunny?",
+          ko: "맑았니?",
+          type: "과거 단순 (날씨, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Was it 7 o’clock?",
+          ko: "7시였니?",
+          type: "과거 단순 (시간, 의문문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Wasn’t I a student?",
+          ko: "내가 학생이 아니었니?",
+          type: "과거 단순 (신분, 의문 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Weren’t you a teacher?",
+          ko: "너 교사가 아니었니?",
+          type: "과거 단순 (신분, 의문 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Wasn’t he/she a doctor?",
+          ko: "그는/그녀는 의사가 아니었니?",
+          type: "과거 단순 (신분, 의문 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Weren’t they friends?",
+          ko: "그들은 친구가 아니었니?",
+          type: "과거 단순 (신분, 의문 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "Wasn’t it sunny?",
+          ko: "맑지 않았니?",
+          type: "과거 단순 (날씨, 의문 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "I was not a student.",
+          ko: "나는 학생이 아니었다.",
+          type: "과거 단순 (신분, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "I was not at home.",
+          ko: "나는 집에 있지 않았다.",
+          type: "과거 단순 (장소, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "I was not happy.",
+          ko: "나는 행복하지 않았다.",
+          type: "과거 단순 (상태, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "You were not a teacher.",
+          ko: "너는 교사가 아니었다.",
+          type: "과거 단순 (신분, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "You were not in Seoul.",
+          ko: "너는 서울에 있지 않았다.",
+          type: "과거 단순 (장소, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "You were not happy.",
+          ko: "너는 행복하지 않았다.",
+          type: "과거 단순 (상태, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "He/She was not a doctor.",
+          ko: "그는/그녀는 의사가 아니었다.",
+          type: "과거 단순 (신분, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "He/She was not at school.",
+          ko: "그는/그녀는 학교에 있지 않았다.",
+          type: "과거 단순 (장소, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "He/She was not happy.",
+          ko: "그는/그녀는 행복하지 않았다.",
+          type: "과거 단순 (상태, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "They were not friends.",
+          ko: "그들은 친구가 아니었다.",
+          type: "과거 단순 (신분, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "They were not in Busan.",
+          ko: "그들은 부산에 있지 않았다.",
+          type: "과거 단순 (장소, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "They were not happy.",
+          ko: "그들은 행복하지 않았다.",
+          type: "과거 단순 (상태, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "It was not sunny.",
+          ko: "날씨가 맑지 않았다.",
+          type: "과거 단순 (날씨, 부정문)",
+          tense: "과거 단순",
+        },
+        {
+          en: "It was not 7 o’clock.",
+          ko: "7시가 아니었다.",
+          type: "과거 단순 (시간, 부정문)",
+          tense: "과거 단순",
+        },
+        // Future Simple
+        {
+          en: "I will be a student.",
+          ko: "나는 학생일 것이다.",
+          type: "미래 단순 (신분, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "I will be at home.",
+          ko: "나는 집에 있을 것이다.",
+          type: "미래 단순 (장소, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "I will be happy.",
+          ko: "나는 행복할 것이다.",
+          type: "미래 단순 (상태, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "You will be a teacher.",
+          ko: "너는 교사가 될 것이다.",
+          type: "미래 단순 (신분, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "You will be in Seoul.",
+          ko: "너는 서울에 있을 것이다.",
+          type: "미래 단순 (장소, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "You will be happy.",
+          ko: "너는 행복할 것이다.",
+          type: "미래 단순 (상태, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "He/She will be a doctor.",
+          ko: "그는/그녀는 의사가 될 것이다.",
+          type: "미래 단순 (신분, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "He/She will be at school.",
+          ko: "그는/그녀는 학교에 있을 것이다.",
+          type: "미래 단순 (장소, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "He/She will be happy.",
+          ko: "그는/그녀는 행복할 것이다.",
+          type: "미래 단순 (상태, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "They will be friends.",
+          ko: "그들은 친구가 될 것이다.",
+          type: "미래 단순 (신분, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "They will be in Busan.",
+          ko: "그들은 부산에 있을 것이다.",
+          type: "미래 단순 (장소, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "They will be happy.",
+          ko: "그들은 행복할 것이다.",
+          type: "미래 단순 (상태, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "It will be sunny.",
+          ko: "날씨가 맑을 것이다.",
+          type: "미래 단순 (날씨, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "It will be 7 o’clock.",
+          ko: "7시가 될 것이다.",
+          type: "미래 단순 (시간, 평서문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will I be a student?",
+          ko: "내가 학생일 거니?",
+          type: "미래 단순 (신분, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will I be at home?",
+          ko: "내가 집에 있을 거니?",
+          type: "미래 단순 (장소, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will I be happy?",
+          ko: "내가 행복할 거니?",
+          type: "미래 단순 (상태, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will you be a teacher?",
+          ko: "너 교사가 될 거니?",
+          type: "미래 단순 (신분, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will you be in Seoul?",
+          ko: "너 서울에 있을 거니?",
+          type: "미래 단순 (장소, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will you be happy?",
+          ko: "너 행복할 거니?",
+          type: "미래 단순 (상태, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will he/she be a doctor?",
+          ko: "그는/그녀는 의사가 될 거니?",
+          type: "미래 단순 (신분, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will he/she be at school?",
+          ko: "그는/그녀는 학교에 있을 거니?",
+          type: "미래 단순 (장소, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will he/she be happy?",
+          ko: "그는/그녀는 행복할 거니?",
+          type: "미래 단순 (상태, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will they be friends?",
+          ko: "그들은 친구가 될 거니?",
+          type: "미래 단순 (신분, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will they be in Busan?",
+          ko: "그들은 부산에 있을 거니?",
+          type: "미래 단순 (장소, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will they be happy?",
+          ko: "그들은 행복할 거니?",
+          type: "미래 단순 (상태, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will it be sunny?",
+          ko: "맑을 거니?",
+          type: "미래 단순 (날씨, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Will it be 7 o’clock?",
+          ko: "7시가 될 거니?",
+          type: "미래 단순 (시간, 의문문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Won’t I be a student?",
+          ko: "내가 학생이 되지 않을 거니?",
+          type: "미래 단순 (신분, 의문 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Won’t you be a teacher?",
+          ko: "너 교사가 되지 않을 거니?",
+          type: "미래 단순 (신분, 의문 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Won’t he/she be a doctor?",
+          ko: "그는/그녀는 의사가 되지 않을 거니?",
+          type: "미래 단순 (신분, 의문 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Won’t they be friends?",
+          ko: "그들은 친구가 되지 않을 거니?",
+          type: "미래 단순 (신분, 의문 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "Won’t it be sunny?",
+          ko: "맑지 않을 거니?",
+          type: "미래 단순 (날씨, 의문 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "I won’t be a student.",
+          ko: "나는 학생이 되지 않을 것이다.",
+          type: "미래 단순 (신분, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "I won’t be at home.",
+          ko: "나는 집에 있지 않을 것이다.",
+          type: "미래 단순 (장소, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "I won’t be happy.",
+          ko: "나는 행복하지 않을 것이다.",
+          type: "미래 단순 (상태, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "You won’t be a teacher.",
+          ko: "너는 교사가 되지 않을 것이다.",
+          type: "미래 단순 (신분, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "You won’t be in Seoul.",
+          ko: "너는 서울에 있지 않을 것이다.",
+          type: "미래 단순 (장소, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "You won’t be happy.",
+          ko: "너는 행복하지 않을 것이다.",
+          type: "미래 단순 (상태, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "He/She won’t be a doctor.",
+          ko: "그는/그녀는 의사가 되지 않을 것이다.",
+          type: "미래 단순 (신분, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "He/She won’t be at school.",
+          ko: "그는/그녀는 학교에 있지 않을 것이다.",
+          type: "미래 단순 (장소, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "He/She won’t be happy.",
+          ko: "그는/그녀는 행복하지 않을 것이다.",
+          type: "미래 단순 (상태, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "They won’t be friends.",
+          ko: "그들은 친구가 되지 않을 것이다.",
+          type: "미래 단순 (신분, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "They won’t be in Busan.",
+          ko: "그들은 부산에 있지 않을 것이다.",
+          type: "미래 단순 (장소, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "They won’t be happy.",
+          ko: "그들은 행복하지 않을 것이다.",
+          type: "미래 단순 (상태, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "It won’t be sunny.",
+          ko: "날씨가 맑지 않을 것이다.",
+          type: "미래 단순 (날씨, 부정문)",
+          tense: "미래 단순",
+        },
+        {
+          en: "It won’t be 7 o’clock.",
+          ko: "7시가 되지 않을 것이다.",
+          type: "미래 단순 (시간, 부정문)",
+          tense: "미래 단순",
+        },
+        // Present Perfect
+        {
+          en: "I have been a student.",
+          ko: "나는 (지금까지) 학생이었다.",
+          type: "현재완료 (신분, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "I have been at home.",
+          ko: "나는 (지금까지) 집에 있었다.",
+          type: "현재완료 (장소, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "I have been happy.",
+          ko: "나는 (지금까지) 행복했다.",
+          type: "현재완료 (상태, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "You have been a teacher.",
+          ko: "너는 (지금까지) 교사였다.",
+          type: "현재완료 (신분, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "You have been in Seoul.",
+          ko: "너는 (지금까지) 서울에 있었다.",
+          type: "현재완료 (장소, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "You have been happy.",
+          ko: "너는 (지금까지) 행복했다.",
+          type: "현재완료 (상태, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "He/She has been a doctor.",
+          ko: "그는/그녀는 (지금까지) 의사였다.",
+          type: "현재완료 (신분, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "He/She has been at school.",
+          ko: "그는/그녀는 (지금까지) 학교에 있었다.",
+          type: "현재완료 (장소, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "He/She has been happy.",
+          ko: "그는/그녀는 (지금까지) 행복했다.",
+          type: "현재완료 (상태, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "They have been friends.",
+          ko: "그들은 (지금까지) 친구였다.",
+          type: "현재완료 (신분, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "They have been in Busan.",
+          ko: "그들은 (지금까지) 부산에 있었다.",
+          type: "현재완료 (장소, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "They have been happy.",
+          ko: "그들은 (지금까지) 행복했다.",
+          type: "현재완료 (상태, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "It has been sunny.",
+          ko: "(지금까지) 맑았다.",
+          type: "현재완료 (날씨, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "It has been 7 o’clock.",
+          ko: "(지금까지) 7시였다.",
+          type: "현재완료 (시간, 평서문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have I been a student?",
+          ko: "내가 (지금까지) 학생이었니?",
+          type: "현재완료 (신분, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have I been at home?",
+          ko: "내가 (지금까지) 집에 있었니?",
+          type: "현재완료 (장소, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have I been happy?",
+          ko: "내가 (지금까지) 행복했니?",
+          type: "현재완료 (상태, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have you been a teacher?",
+          ko: "너 (지금까지) 교사였니?",
+          type: "현재완료 (신분, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have you been in Seoul?",
+          ko: "너 (지금까지) 서울에 있었니?",
+          type: "현재완료 (장소, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have you been happy?",
+          ko: "너 (지금까지) 행복했니?",
+          type: "현재완료 (상태, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Has he/she been a doctor?",
+          ko: "그는/그녀는 (지금까지) 의사였니?",
+          type: "현재완료 (신분, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Has he/she been at school?",
+          ko: "그는/그녀는 (지금까지) 학교에 있었니?",
+          type: "현재완료 (장소, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Has he/she been happy?",
+          ko: "그는/그녀는 (지금까지) 행복했니?",
+          type: "현재완료 (상태, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have they been friends?",
+          ko: "그들은 (지금까지) 친구였니?",
+          type: "현재완료 (신분, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have they been in Busan?",
+          ko: "그들은 (지금까지) 부산에 있었니?",
+          type: "현재완료 (장소, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Have they been happy?",
+          ko: "그들은 (지금까지) 행복했니?",
+          type: "현재완료 (상태, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Has it been sunny?",
+          ko: "(지금까지) 맑았니?",
+          type: "현재완료 (날씨, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Has it been 7 o’clock?",
+          ko: "(지금까지) 7시였니?",
+          type: "현재완료 (시간, 의문문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Haven’t I been a student?",
+          ko: "내가 (지금까지) 학생이 아니었니?",
+          type: "현재완료 (신분, 의문 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Haven’t you been a teacher?",
+          ko: "너 (지금까지) 교사가 아니었니?",
+          type: "현재완료 (신분, 의문 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Hasn’t he/she been a doctor?",
+          ko: "그는/그녀는 (지금까지) 의사가 아니었니?",
+          type: "현재완료 (신분, 의문 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Haven’t they been friends?",
+          ko: "그들은 (지금까지) 친구가 아니었니?",
+          type: "현재완료 (신분, 의문 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "Hasn’t it been sunny?",
+          ko: "(지금까지) 맑지 않았니?",
+          type: "현재완료 (날씨, 의문 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "I have not been a student.",
+          ko: "나는 (지금까지) 학생이 아니었다.",
+          type: "현재완료 (신분, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "I have not been at home.",
+          ko: "나는 (지금까지) 집에 있지 않았다.",
+          type: "현재완료 (장소, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "I have not been happy.",
+          ko: "나는 (지금까지) 행복하지 않았다.",
+          type: "현재완료 (상태, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "You have not been a teacher.",
+          ko: "너는 (지금까지) 교사가 아니었다.",
+          type: "현재완료 (신분, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "You have not been in Seoul.",
+          ko: "너는 (지금까지) 서울에 있지 않았다.",
+          type: "현재완료 (장소, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "You have not been happy.",
+          ko: "너는 (지금까지) 행복하지 않았다.",
+          type: "현재완료 (상태, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "He/She has not been a doctor.",
+          ko: "그는/그녀는 (지금까지) 의사가 아니었다.",
+          type: "현재완료 (신분, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "He/She has not been at school.",
+          ko: "그는/그녀는 (지금까지) 학교에 있지 않았다.",
+          type: "현재완료 (장소, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "He/She has not been happy.",
+          ko: "그는/그녀는 (지금까지) 행복하지 않았다.",
+          type: "현재완료 (상태, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "They have not been friends.",
+          ko: "그들은 (지금까지) 친구가 아니었다.",
+          type: "현재완료 (신분, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "They have not been in Busan.",
+          ko: "그들은 (지금까지) 부산에 있지 않았다.",
+          type: "현재완료 (장소, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "They have not been happy.",
+          ko: "그들은 (지금까지) 행복하지 않았다.",
+          type: "현재완료 (상태, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "It has not been sunny.",
+          ko: "(지금까지) 맑지 않았다.",
+          type: "현재완료 (날씨, 부정문)",
+          tense: "현재완료",
+        },
+        {
+          en: "It has not been 7 o’clock.",
+          ko: "(지금까지) 7시가 아니었다.",
+          type: "현재완료 (시간, 부정문)",
+          tense: "현재완료",
+        },
+      ];
 
-    function playTTS(text) {
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'en-US';
-      utter.rate = 0.9;
-      speechSynthesis.speak(utter);
-    }
+      // ====== 해석 표시/숨기기 ======
+      function toggleFurigana() {
+        const allTranslations = document.querySelectorAll(
+          ".translation, .vocab"
+        );
+        allTranslations.forEach((el) => el.classList.toggle("hidden"));
 
-    async function startRecording(tenseIndex, usageIndex, exampleIndex) {
-      const index = `${tenseIndex}-${usageIndex}-${exampleIndex}`;
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
+        const btn = document.getElementById("toggleFuriganaBtn");
+        if (btn.textContent.includes("보기")) {
+          btn.textContent = "▲ 해석 숨기기";
+        } else {
+          btn.textContent = "▼ 해석 보기";
+        }
+      }
+
+      // ====== 음성 인식 정확도 계산 및 오류 분석 ======
+      function calculateAccuracy(original, recognized, index) {
+        // 특수기호 제거 및 공백 정규화
+        const cleanOriginal = original
+          .replace(/[.,!?]/g, "")
+          .replace(/\s+/g, "");
+        const cleanRecognized = recognized
+          .replace(/[.,!?]/g, "")
+          .replace(/\s+/g, "");
+
+        let matched = 0;
+        const minLength = Math.min(
+          cleanOriginal.length,
+          cleanRecognized.length
+        );
+        const errorPositions = [];
+
+        for (let i = 0; i < minLength; i++) {
+          if (
+            cleanOriginal[i].toLowerCase() === cleanRecognized[i].toLowerCase()
+          ) {
+            matched++;
+          } else {
+            errorPositions.push(i);
+          }
+        }
+
+        const accuracy = Math.round((matched / cleanOriginal.length) * 100);
+
+        // 오류 위치를 강조한 HTML 생성
+        let highlightedOriginal = "";
+        let highlightedRecognized = "";
+
+        for (let i = 0; i < cleanOriginal.length; i++) {
+          if (errorPositions.includes(i)) {
+            highlightedOriginal += `<span class="error-char">${cleanOriginal[i]}</span>`;
+          } else {
+            highlightedOriginal += cleanOriginal[i];
+          }
+        }
+
+        for (
+          let i = 0;
+          i < Math.min(cleanRecognized.length, cleanOriginal.length);
+          i++
+        ) {
+          if (errorPositions.includes(i)) {
+            highlightedRecognized += `<span class="error-char">${cleanRecognized[i]}</span>`;
+          } else {
+            highlightedRecognized += cleanRecognized[i];
+          }
+        }
+
+        // 결과 저장
+        accuracyResults[index] = {
+          original: cleanOriginal,
+          recognized: cleanRecognized,
+          accuracy: accuracy,
+          errorPositions: errorPositions,
+          highlightedOriginal: highlightedOriginal,
+          highlightedRecognized: highlightedRecognized,
+        };
+
+        return accuracy;
+      }
+
+      // ====== 정확도 리포트 다운로드 ======
+      function downloadAccuracyReport() {
+        if (accuracyResults.length === 0) {
+          alert("분석 데이터가 없습니다. 먼저 음성 인식을 수행해주세요.");
+          return;
+        }
+
+        let csvContent = "문장 번호,원문,인식 결과,정확도,오류 위치\n";
+
+        accuracyResults.forEach((result, index) => {
+          if (!result) return;
+
+          const errorDetails = result.errorPositions
+            .map((pos) => {
+              return `위치${pos + 1}: '${result.original[pos]}'→'${
+                result.recognized[pos] || "없음"
+              }'`;
+            })
+            .join("; ");
+
+          csvContent += `${index + 1},"${sentences[index].en}","${
+            result.recognized
+          }",${result.accuracy}%,"${errorDetails}"\n`;
+        });
+
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
+        saveAs(blob, "be동사_발음_분석_리포트.csv");
+      }
+
+      // ====== 음성 인식 기능 ======
+      async function startRecognition(index) {
+        try {
+          const micReady = await initMicrophone();
+          if (!micReady) return;
+
+          const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (!SpeechRecognition) {
+            alert("이 브라우저는 음성 인식을 지원하지 않습니다 (Chrome 권장)");
+            return;
+          }
+
+          const recognition = new SpeechRecognition();
+          recognition.lang = "en-US";
+          recognition.interimResults = true;
+          recognition.continuous = false;
+
+          const output = document.getElementById(`recognition-${index}`);
+          output.innerHTML = "<em>🎙️ 인식 중...</em>";
+
+          recognition.onresult = (event) => {
+            let transcript = "";
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              transcript += event.results[i][0].transcript;
+            }
+            const accuracy = calculateAccuracy(
+              sentences[index].en,
+              transcript,
+              index
+            );
+
+            const result = accuracyResults[index];
+            output.innerHTML = `
+            <div class="accuracy-result">
+              <strong>인식 결과:</strong> ${result.highlightedRecognized}<br>
+              <strong>정확도:</strong> ${accuracy}%
+            </div>
+            <div class="error-analysis">
+              <strong>원문:</strong> ${result.highlightedOriginal}<br>
+              <strong>오류 위치:</strong> ${result.errorPositions.length}개
+            </div>
+          `;
+          };
+
+          recognition.start();
+        } catch (error) {
+          console.error("음성 인식 오류:", error);
+        }
+      }
+
+      // ====== 기존 기능들 ======
+      async function requestMicrophonePermission() {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          stream.getTracks().forEach((track) => track.stop());
+          permissionGranted = true;
+          localStorage.setItem("micPermissionGranted", "true");
+          document.getElementById("micStatus").style.display = "none";
+          return true;
+        } catch (error) {
+          console.error("마이크 권한 요청 실패:", error);
+          return false;
+        }
+      }
+
+      async function initMicrophone() {
+        if (permissionGranted && globalStream) return true;
+
+        try {
+          globalStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          permissionGranted = true;
+          localStorage.setItem("micPermissionGranted", "true");
+          document.getElementById("micStatus").style.display = "none";
+          return true;
+        } catch (error) {
+          console.error("마이크 접근 오류:", error);
+          document.getElementById("micStatus").style.display = "block";
+          return false;
+        }
+      }
+
+      function playTTS(text) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = "en-US";
+        utter.rate = 0.5;
+        speechSynthesis.speak(utter);
+      }
+
+      async function startRecording(index) {
+        const micReady = await initMicrophone();
+        if (!micReady) return;
+
+        if (mediaRecorders[index]?.state === "recording") {
+          mediaRecorders[index].stop();
+        }
+
+        const recorder = new MediaRecorder(globalStream);
         const chunks = [];
 
-        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.ondataavailable = (e) => chunks.push(e.data);
         recorder.onstop = () => {
-          const blob = new Blob(chunks, { type: 'audio/webm' });
-          document.getElementById(`audio-${index}`).src = URL.createObjectURL(blob);
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          const audioURL = URL.createObjectURL(blob);
+          const audioElement = document.getElementById(`audio-${index}`);
+
+          audioElement.src = audioURL;
           audioBlobs[index] = blob;
-          document.getElementById(`check-${index}`).innerText = '✅';
+          document.getElementById(`check-${index}`).innerText = "✅";
         };
 
         mediaRecorders[index] = recorder;
         recorder.start();
-      } catch (error) {
-        alert('Microphone access error: ' + error.message);
       }
-    }
 
-    function stopRecording(tenseIndex, usageIndex, exampleIndex) {
-      const index = `${tenseIndex}-${usageIndex}-${exampleIndex}`;
-      if (mediaRecorders[index] && mediaRecorders[index].state !== 'inactive') {
-        mediaRecorders[index].stop();
+      function stopRecording(index) {
+        if (mediaRecorders[index]?.state === "recording") {
+          mediaRecorders[index].stop();
+        }
       }
-    }
 
-    function toggle(id) {
-      const el = document.getElementById(id);
-      el.classList.toggle('hidden');
-    }
+      function toggle(id) {
+        const el = document.getElementById(id);
+        el.classList.toggle("hidden");
+      }
 
-    function downloadAllRecordings() {
-      const zip = new JSZip();
-      let hasRecordings = false;
-      
-      Object.keys(audioBlobs).forEach(key => {
-        if (audioBlobs[key]) {
-          const [t, u, e] = key.split('-');
-          const tense = grammarData[t].tense.replace(/ /g, '_');
-          const filename = `${tense}_example_${parseInt(e)+1}.webm`;
-          zip.file(filename, audioBlobs[key]);
-          hasRecordings = true;
+      function downloadAllRecordings() {
+        const zip = new JSZip();
+        let hasRecordings = false;
+
+        audioBlobs.forEach((blob, index) => {
+          if (blob) {
+            const filename = `be_verb_${index + 1}.webm`;
+            zip.file(filename, blob);
+            hasRecordings = true;
+          }
+        });
+
+        if (hasRecordings) {
+          zip.generateAsync({ type: "blob" }).then((content) => {
+            saveAs(content, "be_verb_recordings.zip");
+          });
+        } else {
+          alert("녹음 파일이 없습니다");
+        }
+      }
+
+      function renderContent() {
+        const container = document.getElementById("content");
+        let currentTense = "";
+
+        sentences.forEach((sentence, index) => {
+          // 시제별 헤더 추가
+          if (sentence.tense !== currentTense) {
+            currentTense = sentence.tense;
+            const header = document.createElement("h3");
+            header.className = "tense-header";
+            header.textContent = currentTense;
+            container.appendChild(header);
+          }
+
+          const div = document.createElement("div");
+          div.className = "sentence-block";
+          div.innerHTML = `
+          <span id="check-${index}" class="checkmark"></span>
+          <p><strong>${sentence.en
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")}</strong> <small>(${
+            sentence.type
+          })</small></p>
+          <div>
+            <button onclick="playTTS('${sentence.en.replace(
+              /'/g,
+              "\\'"
+            )}')">▶️ 듣기</button>
+            <button onclick="startRecording(${index})">🎙️ 녹음</button>
+            <button onclick="stopRecording(${index})">⏹️ 정지</button>
+            <button onclick="toggle('trans-${index}')">🔍 해석 보기</button>
+            <button onclick="startRecognition(${index})">🗣️ 발음 체크</button>
+          </div>
+          <audio id="audio-${index}" controls></audio>
+          <div id="recognition-${index}" style="margin-top:10px;"></div>
+          <div id="trans-${index}" class="hidden">
+            <div class="translation"><strong>한국어:</strong> ${
+              sentence.ko
+            }</div>
+          </div>
+        `;
+          container.appendChild(div);
+        });
+      }
+
+      // ====== 초기화 ======
+      document
+        .getElementById("permissionButton")
+        .addEventListener("click", async () => {
+          await requestMicrophonePermission();
+        });
+
+      window.addEventListener("load", () => {
+        if (permissionGranted) {
+          document.getElementById("micStatus").style.display = "none";
+        } else {
+          document.getElementById("micStatus").style.display = "block";
+        }
+        renderContent();
+      });
+
+      window.addEventListener("beforeunload", () => {
+        if (globalStream) {
+          globalStream.getTracks().forEach((track) => track.stop());
         }
       });
-      
-      if (hasRecordings) {
-        zip.generateAsync({ type: 'blob' }).then(content => {
-          saveAs(content, 'english_tenses_full_recordings.zip');
-        });
-      } else {
-        alert('No recordings available to download.');
-      }
-    }
-
-    const container = document.getElementById('content');
-    
-    grammarData.forEach((tenseData, tenseIndex) => {
-      const tenseSection = document.createElement('div');
-      tenseSection.className = 'tense-section';
-      tenseSection.style.setProperty('--tense-color', tenseData.color);
-      
-      let tenseHTML = `
-        <h2 style="border-color: ${tenseData.color}">
-          <span class="tense-label" style="background: ${tenseData.color}">${tenseData.tense}</span>
-        </h2>
-      `;
-      
-      tenseData.usages.forEach((usage, usageIndex) => {
-        tenseHTML += `
-          <div class="usage">
-            <h3>${usage.title}</h3>
-        `;
-        
-        usage.examples.forEach((example, exampleIndex) => {
-          const index = `${tenseIndex}-${usageIndex}-${exampleIndex}`;
-          tenseHTML += `
-            <div class="sentence-block">
-              <span id="check-${index}" class="checkmark"></span>
-              <div>
-                <span class="form-label">${example.form}</span>
-              </div>
-              <p><strong>${example.en}</strong></p>
-              <div>
-                <button onclick="playTTS('${example.en.replace(/'/g, "\\'")}')">▶️ Listen</button>
-                <button onclick="startRecording(${tenseIndex}, ${usageIndex}, ${exampleIndex})">🎙️ Record</button>
-                <button onclick="stopRecording(${tenseIndex}, ${usageIndex}, ${exampleIndex})">⏹️ Stop</button>
-                <button onclick="toggle('trans-${index}')">🔍 Translation</button>
-              </div>
-              <audio id="audio-${index}" controls></audio>
-              <div id="trans-${index}" class="hidden translation">
-                <p><strong>Korean:</strong> ${example.ko}</p>
-              </div>
-            </div>
-          `;
-        });
-        
-        tenseHTML += `</div>`;
-      });
-      
-      tenseSection.innerHTML = tenseHTML;
-      container.appendChild(tenseSection);
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
